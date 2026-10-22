@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import userRoute from "./routes/user.routes.js";
+import tasksRoute from "./routes/tasks.routes.js"
 import morgan from "morgan";
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(morgan("dev"))
 
 // API Routes yahan register honge
 app.use("/api/auth", userRoute);
+app.use("/api/tasks",tasksRoute)
 
 app.get("/api/health", (req, res) => {
   return res.status(200).json({
