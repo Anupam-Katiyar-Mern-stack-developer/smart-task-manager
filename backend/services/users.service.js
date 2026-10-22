@@ -99,7 +99,7 @@ export const UserProfileService = async ({ userId }) => {
   try {
     const result = await pool.query(
       `
-            select id,name,email from users 
+            select id,name,email,created_at from users 
             where id = $1
             limit 1
             `,
@@ -111,7 +111,8 @@ export const UserProfileService = async ({ userId }) => {
       error.statusCode = 404;
       throw error;
     }
-    return (user = result.rows[0]);
+    const user = result.rows[0];
+    return user;
   } catch (error) {
     throw error;
   }

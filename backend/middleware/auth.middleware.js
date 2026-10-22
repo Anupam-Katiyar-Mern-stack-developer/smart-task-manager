@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 export const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (authHeader.startsWith("Bearer ")) {
+    console.log(authHeader);
+    if (!authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
         message: "token is required",
