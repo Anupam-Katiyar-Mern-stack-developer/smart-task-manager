@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes yahan register honge
-app.post("/api/auth", userRoute);
+app.use("/api/auth", userRoute);
 
 app.get("/api/health", (req, res) => {
   return res.status(200).json({
