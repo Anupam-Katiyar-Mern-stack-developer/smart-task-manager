@@ -86,8 +86,32 @@ export const userLoginService = async ({ email, password }) => {
       },
     );
     return {
-        user,token
+      user,
+      token,
     };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// user profile service
+export const UserProfileService = async ({ userId }) => {
+  try {
+    const result = await pool.query(
+      `
+            select id,name,email from users 
+            where id = $1
+            limit 1
+            `,
+      [userId],
+    );
+
+    if (result.rows.length === 0) {
+      const error = new Error("user not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    return (user = result.rows[0]);
   } catch (error) {
     throw error;
   }
