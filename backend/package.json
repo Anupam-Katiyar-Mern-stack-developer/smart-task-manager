@@ -2,11 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start":"nodemon server.js",
-    "dev":"nodemon server.js"
+    "dev":"nodemon server.js",
+    "db:migrate":"node database/migrate.js"
+
   },
   "keywords": [],
   "author": "",
