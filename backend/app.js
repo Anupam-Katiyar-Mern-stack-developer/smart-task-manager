@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
 import userRoute from "./routes/user.routes.js";
+import morgan from "morgan";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(morgan("dev"))
 
 // API Routes yahan register honge
 app.use("/api/auth", userRoute);
