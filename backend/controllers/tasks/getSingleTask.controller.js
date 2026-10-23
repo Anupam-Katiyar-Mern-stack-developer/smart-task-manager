@@ -3,7 +3,7 @@ import { getSingleTaskService } from "../../services/tasks.service.js";
 export const getSingleTaskController = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    const {title} = req.params;
+    const {taskId} = req.params;
 
     if (!userId || !title) {
       return res.status(401).json({

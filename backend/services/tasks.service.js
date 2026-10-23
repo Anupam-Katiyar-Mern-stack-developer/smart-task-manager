@@ -92,7 +92,7 @@ export const getTaskService = async ({
 
 export const getSingleTaskService = async ({ userId, title }) => {
   try {
-    const response = pool.query(
+    const response =await pool.query(
       `select * from tasks
       where title=$1
       and user_id =$2 

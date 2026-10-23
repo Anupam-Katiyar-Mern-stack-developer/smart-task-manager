@@ -9,6 +9,6 @@ const router =express.Router();
 router.post("/create",authMiddleware, createTaskController);
 
 router.get("/",authMiddleware,getTasksController);
-router.get("/:title",authMiddleware,getSingleTaskController);
+router.get("/:taskId",authMiddleware,getSingleTaskController);
 
 export default router;
