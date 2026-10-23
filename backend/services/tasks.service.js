@@ -92,7 +92,7 @@ export const getTaskService = async ({
 
 export const getSingleTaskService = async ({ userId, title }) => {
   try {
-    const response =await pool.query(
+    const response = await pool.query(
       `select * from tasks
       where title=$1
       and user_id =$2 
@@ -109,4 +109,33 @@ export const getSingleTaskService = async ({ userId, title }) => {
   } catch (error) {
     throw error;
   }
+};
+
+// update task service
+
+export const updateTaskService = async ({
+  userId,
+  taskId,
+  title,
+  priority,
+  status,
+}) => {
+  const response = await pool.query(
+    `update tasks 
+        set title =$1,
+        priority =$2,
+        status =$3,
+        updated_at current_timestamp,
+        where id =$4 and user_id = $5
+        returning *
+         `,
+    [title, priority, status, taskId, userId],
+  );
+  if (response.rows.length === 0) {
+    const error = new Error("not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return response.rows[0];
 };
