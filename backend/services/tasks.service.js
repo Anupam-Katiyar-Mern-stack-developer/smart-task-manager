@@ -42,6 +42,9 @@ export const getTaskService = async ({
   status,
   priority,
   search,
+  limit,
+  pageNumber,
+  offset,
 }) => {
   try {
     const result = await pool.query(
@@ -50,19 +53,41 @@ export const getTaskService = async ({
             from tasks
             where user_id = $1 
                 and title ilike $2
+                and ($3::text is null or status = $3)
+                and ($4::text is null or priority =$4)
             order by created_at desc
+            limit $5 offset $6
             `,
-      [userId, `%${search}`],
+      [userId, `%${search}%`, status || null, priority || null, limit, offset],
     );
 
-    if (result.rows.length === 0) {
-      const error = new Error("tasks not found");
-      error.statusCode = 404;
-      throw error;
-    }
+    const countResult = await pool.query(
+      `SELECT COUNT(*) AS total
+   FROM tasks
+   WHERE user_id = $1
+     AND title ILIKE $2
+     AND ($3::text IS NULL OR status = $3)
+     AND ($4::text IS NULL OR priority = $4)`,
+      [userId, `%${search}%`, status || null, priority || null],
+    );
 
-    return result.rows[0];
+    const total = Number(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      tasks: result.rows,
+      pagination: {
+        page: pageNumber,
+        limit,
+        total,
+        totalPages,
+      },
+    };
   } catch (error) {
     throw error;
   }
 };
+
+
+// get single task 
+
