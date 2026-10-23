@@ -88,6 +88,25 @@ export const getTaskService = async ({
   }
 };
 
+// get single task
 
-// get single task 
+export const getSingleTaskService = async ({ userId, title }) => {
+  try {
+    const response = pool.query(
+      `select * from tasks
+      where title=$1
+      and user_id =$2 
+      `,
+      [title, userId],
+    );
 
+    if (response.rows.length === 0) {
+      const error = new Error("not found ");
+      error.statusCode = 404;
+      throw error;
+    }
+    return response.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
