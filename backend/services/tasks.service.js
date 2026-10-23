@@ -118,19 +118,31 @@ export const updateTaskService = async ({
   taskId,
   title,
   priority,
+  due_date,
+  description,
   status,
 }) => {
-  const response = await pool.query(
-    `update tasks 
-        set title =$1,
-        priority =$2,
-        status =$3,
-        updated_at current_timestamp,
-        where id =$4 and user_id = $5
-        returning *
-         `,
-    [title, priority, status, taskId, userId],
-  );
+  const result = await pool.query(
+  `UPDATE tasks
+   SET
+     title = COALESCE($1, title),
+     description = COALESCE($2, description),
+     priority = COALESCE($3, priority),
+     status = COALESCE($4, status),
+     due_date = COALESCE($5, due_date),
+     updated_at = CURRENT_TIMESTAMP
+   WHERE id = $6 AND user_id = $7
+   RETURNING *`,
+  [
+    title ?? null,
+    description ?? null,
+    priority ?? null,
+    status ?? null,
+    due_date ?? null,
+    taskId,
+    userId
+  ]
+);
   if (response.rows.length === 0) {
     const error = new Error("not found");
     error.statusCode = 404;
