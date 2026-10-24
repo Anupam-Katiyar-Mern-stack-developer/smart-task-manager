@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/auth/Login";
 
-
-function App() {
-
-
+const App = () => {
   return (
-   <div>
-    <p className='p-3 text-xl'>task manager working</p>
-   </div>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<h1>Dashboard</h1>} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
