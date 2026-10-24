@@ -123,7 +123,7 @@ export const updateTaskService = async ({
   status,
 }) => {
   const result = await pool.query(
-  `UPDATE tasks
+    `UPDATE tasks
    SET
      title = COALESCE($1, title),
      description = COALESCE($2, description),
@@ -133,16 +133,16 @@ export const updateTaskService = async ({
      updated_at = CURRENT_TIMESTAMP
    WHERE id = $6 AND user_id = $7
    RETURNING *`,
-  [
-    title ?? null,
-    description ?? null,
-    priority ?? null,
-    status ?? null,
-    due_date ?? null,
-    taskId,
-    userId
-  ]
-);
+    [
+      title ?? null,
+      description ?? null,
+      priority ?? null,
+      status ?? null,
+      due_date ?? null,
+      taskId,
+      userId,
+    ],
+  );
   if (response.rows.length === 0) {
     const error = new Error("not found");
     error.statusCode = 404;
@@ -150,4 +150,22 @@ export const updateTaskService = async ({
   }
 
   return response.rows[0];
+};
+
+export const deleteTaskService = async ({ userId, taskId }) => {
+  const result = await pool.query(
+    `delete from tasks 
+    where id = $1 and user_id = $2 
+    returning id
+    `,
+    [taskId, userId],
+  );
+
+  if (result.rowCount === 0) {
+    const error = new Error("task not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return result.rows[0];
 };
