@@ -169,3 +169,51 @@ export const deleteTaskService = async ({ userId, taskId }) => {
 
   return result.rows[0];
 };
+
+// dashboard
+export const dashboardService = async ({ userId }) => {
+  const result = await pool.query(
+    `
+    SELECT
+  COUNT(*) AS total,
+  COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+  COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+  COUNT(*) FILTER (WHERE status = 'in_progress') AS in_progress,
+  COUNT(*) FILTER (WHERE priority = 'high') AS high_priority,
+  COUNT(*) FILTER (
+  WHERE due_date < CURRENT_DATE
+  AND status != 'completed'
+) AS overdue,
+
+COUNT(*) FILTER (
+  WHERE due_date = CURRENT_DATE
+  AND status != 'completed'
+) AS due_today,
+
+COUNT(*) FILTER (
+  WHERE due_date > CURRENT_DATE
+  AND status != 'completed'
+) AS upcoming
+FROM tasks
+WHERE user_id = $1; `,
+    [userId],
+  );
+  const stats = result.rows[0];
+
+  const total = Number(stats.total);
+  const completed = Number(stats.completed);
+  const completionRate =
+    total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  return {
+    total,
+    completed,
+    pending: Number(stats.pending),
+    inProgress: Number(stats.in_progress),
+    highPriority: Number(stats.high_priority),
+    overdue: Number(stats.overdue),
+    dueToday: Number(stats.due_today),
+    upcoming: Number(stats.upcoming),
+    completionRate,
+  };
+};
