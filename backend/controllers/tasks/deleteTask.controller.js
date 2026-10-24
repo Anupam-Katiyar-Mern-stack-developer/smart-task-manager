@@ -1,30 +1,25 @@
 import { deleteTaskService } from "../../services/tasks.service.js";
 
-export const  deleteTaskController = async (req, res, next) => {
+export const deleteTaskController = async (req, res, next) => {
   try {
-    const { taskId } = req.params;
     const { userId } = req.user;
+    const taskId = Number(req.params.taskId);
 
-    if (!userId) {
-      return res.status(401).json({
+    if (!Number.isSafeInteger(taskId) || taskId <= 0) {
+      return res.status(400).json({
         success: false,
-        message: "Token expeired",
+        message: "Invalid task ID",
       });
     }
-    const result = await deleteTaskService({
-      userId,
-      taskId,
-    });
 
-    return res.status(201).json({
+    const result = await deleteTaskService({ userId, taskId });
+
+    return res.status(200).json({
       success: true,
-      message: "task succesfully delete",
+      message: "Task deleted successfully",
       data: result,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
