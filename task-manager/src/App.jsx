@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AuthInitializer from "./components/auth/AuthInitializer";
-import {ProtectedRoute} from "./routes/ProtectedRoute";
-import PublicRoute from "./routes/PublicRoute";
+import protectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoutes";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 // import PublicRoute from "./routes/PublicRoutes";
@@ -17,7 +17,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
           </Route>
 
-          <Route element={<ProtectedRoute />}>
+          <Route element={<protectedRoute />}>
             <Route path="/dashboard" element={<h1>Dashboard</h1>} />
           </Route>
 
