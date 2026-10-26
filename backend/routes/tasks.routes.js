@@ -15,6 +15,6 @@ router.get("/", authMiddleware, getTasksController);
 router.get("/:taskId", authMiddleware, getSingleTaskController);
 router.patch("/:taskId", authMiddleware, updateTaskController);
 router.delete("/:taskId", authMiddleware, deleteTaskController);
-router.delete("/dashboard", authMiddleware, dashboardController);
+router.get("/user/dashboard", authMiddleware, dashboardController);
 
 export default router;

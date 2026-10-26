@@ -5,13 +5,13 @@ export const getSingleTaskController = async (req, res, next) => {
     const { userId } = req.user;
     const {taskId} = req.params;
 
-    if (!userId || !title) {
+    if (!userId || !taskId) {
       return res.status(401).json({
         success: false,
         message: "please login",
       });
     }
-    const result = await getSingleTaskService({ userId, title });
+    const result = await getSingleTaskService({ userId, taskId });
     return res.status(200).json({
       success: true,
       message: "succesfully fetch",
