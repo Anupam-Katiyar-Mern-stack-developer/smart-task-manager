@@ -5,6 +5,8 @@ import PublicRoute from "./routes/PublicRoutes";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 // import PublicRoute from "./routes/PublicRoutes";
+import Dashboard from "./pages/dashboard/Dashboard";
+import DashboardLayout from "./components/layout/DashboardLayout";
 
 
 const App = () => {
@@ -18,7 +20,19 @@ const App = () => {
           </Route>
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<h1>Dashboard</h1>} />
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+
+              {/* Temporary placeholders: replace when these pages are built */}
+              <Route
+                path="/tasks"
+                element={<div className="text-slate-700">Tasks module coming next.</div>}
+              />
+              <Route
+                path="/profile"
+                element={<div className="text-slate-700">Profile module coming next.</div>}
+              />
+            </Route>
           </Route>
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
