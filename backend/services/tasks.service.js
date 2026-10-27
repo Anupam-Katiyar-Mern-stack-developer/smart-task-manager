@@ -37,55 +37,35 @@ export const CreateTaskService = async ({
 };
 
 // get task
-export const getTaskService = async ({
-  userId,
-  status,
-  priority,
-  search,
-  limit,
-  pageNumber,
-  offset,
-}) => {
-  try {
-    const result = await pool.query(
-      `
-            select * 
-            from tasks
-            where user_id = $1 
-                and title ilike $2
-                and ($3::text is null or status = $3)
-                and ($4::text is null or priority =$4)
-            order by created_at desc
-            limit $5 offset $6
-            `,
-      [userId, `%${search}%`, status || null, priority || null, limit, offset],
-    );
+export const getTask = async ({ userId, page, offset, limit, search }) => {
+  const result = await pool.query(
+    `
+    select * from tasks
+    where user_id=$1
+    and title ilike $2
+      limit $3 
+      offset $4
+    `,
+    [userId, search, limit, offset],
+  );
 
-    const countResult = await pool.query(
-      `SELECT COUNT(*) AS total
-   FROM tasks
-   WHERE user_id = $1
-     AND title ILIKE $2
-     AND ($3::text IS NULL OR status = $3)
-     AND ($4::text IS NULL OR priority = $4)`,
-      [userId, `%${search}%`, status || null, priority || null],
-    );
+  const resultCount = await pool.query(
+    `
+    select count(*) from tasks
+    where user_id =$!
+    `,
+    [userId],
+  );
 
-    const total = Number(countResult.rows[0].total);
-    const totalPages = Math.ceil(total / limit);
+  const totalTasks = resultCount.rows;
 
-    return {
-      tasks: result.rows,
-      pagination: {
-        page: pageNumber,
-        limit,
-        total,
-        totalPages,
-      },
-    };
-  } catch (error) {
-    throw error;
-  }
+  const totalPages = Math.ceil(totalTasks / limit);
+
+  return {
+    tasks: result.rows,
+    totalPages,
+    totalTasks,
+  };
 };
 
 // get single task

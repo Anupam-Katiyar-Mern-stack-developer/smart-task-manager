@@ -1,35 +1,30 @@
 import { getTaskService } from "../../services/tasks.service.js";
 
-export const getTasksController = async (req, res, next) => {
+export const getTaskController = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    const { search = "", status, priority, page = 1, limit = 5 } = req.query;
-
-    const pagenumber = Number(page);
+    const { page = 1, limit = 5, search = "" } = req.query;
     const limitNumber = Number(limit);
-    const offset = (pagenumber - 1) * limitNumber;
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "please login first",
-      });
-    }
+    const pageNumber = Number(page);
+    const offset = (pageNumber - 1) * limit;
 
     const result = await getTaskService({
       userId,
-      search,
-      status,
-      priority,
-      limit: limitNumber,
-      pageNumber: pagenumber,
+      pageNumber,
       offset,
+      limit: limitNumber,
+      search,
     });
 
     return res.status(200).json({
       success: true,
-      message: "tasks fetch success fully",
+      message: "successfully fetched",
       data: result,
+      pagination: {
+        pageNumber,
+        totalPages: result.totalPages,
+        totalTasks: result.totalTasks,
+      },
     });
   } catch (error) {
     next(error);
