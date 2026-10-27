@@ -37,37 +37,89 @@ export const CreateTaskService = async ({
 };
 
 // get task
-export const getTask = async ({ userId, page, offset, limit, search }) => {
-  const result = await pool.query(
-    `
-    select * from tasks
-    where user_id=$1
-    and title ilike $2
-      limit $3 
-      offset $4
-    `,
-    [userId, search, limit, offset],
-  );
 
-  const resultCount = await pool.query(
-    `
-    select count(*) from tasks
-    where user_id =$!
-    `,
-    [userId],
-  );
+export const getTasksService = async ({
+  userId,
+  page = 1,
+  limit = 10,
+  status,
+  priority,
+  search,
+}) => {
+  // 1. Default condition: current user's tasks only
+  const conditions = ["user_id = $1"];
+  const values = [userId];
 
-  const totalTasks = resultCount.rows;
+  // 2. Status filter
+  if (status) {
+    values.push(status);
+    conditions.push(`status = $${values.length}`);
+  }
 
-  const totalPages = Math.ceil(totalTasks / limit);
+  // 3. Priority filter
+  if (priority) {
+    values.push(priority);
+    conditions.push(`priority = $${values.length}`);
+  }
 
+  // 4. Search by task title
+  if (search) {
+    values.push(`%${search}%`);
+    conditions.push(`title ILIKE $${values.length}`);
+  }
+
+  // 5. Build WHERE clause
+  const whereClause = conditions.join(" AND ");
+
+  // 6. Calculate pagination offset
+  const offset = (page - 1) * limit;
+
+  // 7. Count all matching tasks
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM tasks
+    WHERE ${whereClause}
+  `;
+
+  // 8. Fetch tasks for the requested page
+  const tasksQuery = `
+    SELECT
+      id,
+      title,
+      description,
+      status,
+      priority,
+      due_date,
+      created_at,
+      updated_at
+    FROM tasks
+    WHERE ${whereClause}
+    ORDER BY created_at DESC, id DESC
+    LIMIT $${values.length + 1}
+    OFFSET $${values.length + 2}
+  `;
+
+  // 9. Execute both queries
+  const [countResult, tasksResult] = await Promise.all([
+    pool.query(countQuery, values),
+    pool.query(tasksQuery, [...values, limit, offset]),
+  ]);
+
+  // 10. Convert PostgreSQL COUNT result to a number
+  const total = Number(countResult.rows[0].total);
+  const totalPages = Math.ceil(total / limit);
+
+  // 11. Return tasks and pagination metadata
   return {
-    tasks: result.rows,
-    totalPages,
-    totalTasks,
+    tasks: tasksResult.rows,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
   };
 };
-
 // get single task
 
 export const getSingleTaskService = async ({ userId, title }) => {
