@@ -1,8 +1,8 @@
 import express from "express";
 import { createTaskController } from "../controllers/tasks/createTask.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
-import { getTasksController } from "../controllers/tasks.controller.js";
-import { validateQuery } from "../middlewares/validateQuery.js";
+import { getTasksController } from "../controllers/tasks/getTasks.controller.js";
+import { validateQuery } from "../middleware/validateQuery.js";
 import { taskListQuerySchema } from "../validations/task.validation.js";
 import { getSingleTaskController } from "../controllers/tasks/getSingleTask.controller.js";
 import { updateTaskController } from "../controllers/tasks/updateTask.controller.js";

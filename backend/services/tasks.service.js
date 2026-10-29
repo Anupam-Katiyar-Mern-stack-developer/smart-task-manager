@@ -37,7 +37,6 @@ export const CreateTaskService = async ({
 };
 
 // get task
-
 export const getTasksService = async ({
   userId,
   page = 1,
@@ -144,7 +143,6 @@ export const getSingleTaskService = async ({ userId, title }) => {
 };
 
 // update task service
-
 export const updateTaskService = async ({
   userId,
   taskId,
