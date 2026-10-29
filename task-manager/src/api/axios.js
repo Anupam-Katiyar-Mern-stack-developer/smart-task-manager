@@ -18,7 +18,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 api.interceptors.response.use(
@@ -28,27 +28,27 @@ api.interceptors.response.use(
     const response = error.response;
     const data = response?.data;
 
-    let message = "Something went wrong. Please try again.";
+    let message;
 
     if (!response) {
-      message = "Network error. Please check your connection.";
+      message = error.message || "Network error. Please check your connection.";
     } else if (typeof data?.message === "string") {
       message = data.message;
     } else if (typeof data?.error === "string") {
       message = data.error;
     } else if (Array.isArray(data?.errors) && data.errors.length > 0) {
       message = data.errors
-        .map((item) => item.message)
+        .map((item) => (typeof item === "string" ? item : item.message))
         .filter(Boolean)
         .join(", ");
-    } else if (response.status >= 500) {
-      message = "Server error. Please try again later.";
+    } else {
+      message = error.message || "Something went wrong. Please try again.";
     }
 
     toast.error(message);
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

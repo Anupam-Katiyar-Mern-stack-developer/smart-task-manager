@@ -22,6 +22,8 @@ export const userRegisterService = async ({ name, email, password }) => {
 
     if (emailCheck.rows.length > 0) {
       const error = new Error("email already register");
+      error.statusCode =400;
+      throw error;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

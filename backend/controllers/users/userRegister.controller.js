@@ -3,9 +3,9 @@ import { userRegisterService } from "../../services/users.service.js";
 export const UserRegisterController = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
-    console.log(name,email,password)
+    
 
-    if (password.length <= 8) {
+    if (password.length < 8) {
       return res.status(400).json({
         success: false,
         message: "password atleast 8 charecter",
