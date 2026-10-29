@@ -1,9 +1,9 @@
-import { getTasksService } from "../services/tasks.service.js";
+import { getTasksService } from "../../services/tasks.service";
 
 export const getTasksController = async (req, res, next) => {
   try {
-    const { userId } = req.user;
-    const query = res.locals.validatedQuery;
+    const { userId } = req.params;
+    const query = res.locals.validateQuery;
 
     const result = await getTasksService({
       userId,
@@ -12,7 +12,7 @@ export const getTasksController = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Tasks fetched successfully",
+      message: "tasks fetched successfully",
       data: result.tasks,
       pagination: result.pagination,
     });
