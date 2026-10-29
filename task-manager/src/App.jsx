@@ -8,6 +8,7 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import MyTasks from "./pages/tasks/MyTasks";
+import Profile from "./pages/tasks/Profile";
 
 
 const App = () => {
@@ -31,7 +32,7 @@ const App = () => {
               />
               <Route
                 path="/profile"
-                element={<div className="text-slate-700">Profile module coming next.</div>}
+                element={<Profile />}
               />
             </Route>
           </Route>
