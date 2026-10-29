@@ -12,7 +12,6 @@ export const validateQuery = (schema) => (req, res, next) => {
     });
   }
 
-  res.locals.validatedQuery = result.data;
-
+  res.localsvalidateQuery = result.data;
   next();
 };
