@@ -1,5 +1,5 @@
 
-import { useMemo, useState,useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
     Search,
     Plus,
@@ -236,6 +236,7 @@ const MyTasks = () => {
         const payload = {
             ...formData,
             title: formData.title.trim(),
+            due_date: formData.due_date || null,
         };
 
         try {

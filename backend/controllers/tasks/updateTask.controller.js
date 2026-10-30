@@ -1,30 +1,33 @@
 import { updateTaskService } from "../../services/tasks.service.js";
 
-export const updateTaskController = async (req, res, next) => {
+export const updateTaskController = async (req, res) => {
   try {
-    const { userId } = req.user;
-    const { taskId } = req.params;
-    const { title, priority, due_date, description, status } = req.body;
-    if (!taskId) {
-      return res.status(400).json({
-        success: false,
-        message: "bad request",
-      });
-    }
+    console.log("PATCH API HIT");
+    console.log("Task ID:", req.params.taskId);
+    console.log("Request Body:", req.body);
+    console.log("User:", req.user);
+
+    const userId = req.user.userId;
+    const taskId = Number(req.params.id);
+
     const result = await updateTaskService({
-      userId,
       taskId,
-      title,
-      priority,
-      due_date,
-      description,
-      status,
+      userId,
+      ...req.body,
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "succesfully updated",
-      data: result,
+      message: "Task updated successfully",
+      task: result,
     });
-  } catch (error) {}
+
+  } catch (error) {
+    console.error("Update Task Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

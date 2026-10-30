@@ -21,9 +21,9 @@ export const createTaskService = async (taskData) => {
   return response.data;
 };
 
-export const updateTaskService = async (taskId, updates) => {
-  const response = await api.patch(`/tasks/${taskId}`, updates);
-  return response.data;
+export const updateTaskService = async (taskId, task) => {
+    const response = await api.patch(`/tasks/${taskId}`, task);
+    return response.data;
 };
 
 export const deleteTaskService = async (taskId) => {

@@ -66,16 +66,18 @@ export const createTask = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
   "tasks/updateTask",
-  async ({ taskId, updates }, { rejectWithValue }) => {
+  async ({ taskId, task }, thunkAPI) => {
     try {
-      const response = await updateTaskService(taskId, updates);
+      const response = await updateTaskService(taskId, task);
 
       return {
         taskId,
-        task: getTaskFromResponse(response),
+        task: response.task,
       };
     } catch (error) {
-      return rejectWithValue(getErrorMessage(error));
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message,
+      );
     }
   },
 );

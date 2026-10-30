@@ -4,8 +4,7 @@ export const getTasksController = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-   
-
+  
     const result = await getTasksService({
       userId,
       page: Number(req.query.page) || 1,
