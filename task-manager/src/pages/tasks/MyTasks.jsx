@@ -21,49 +21,20 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import Pagination from "../../components/common/Pagination";
+import { useDispatch,useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-const initialTasks = [
-    {
-        id: 1,
-        title: "Complete Task Manager UI",
-        description: "Build the task listing page and reusable layouts.",
-        status: "in_progress",
-        priority: "high",
-        due_date: "2026-10-30",
-    },
-    {
-        id: 2,
-        title: "Integrate Redux Toolkit",
-        description: "Connect async thunks and manage API states.",
-        status: "pending",
-        priority: "high",
-        due_date: "2026-11-01",
-    },
-    {
-        id: 3,
-        title: "Review PostgreSQL queries",
-        description: "Practice joins, CTEs and window functions.",
-        status: "completed",
-        priority: "medium",
-        due_date: "2026-10-25",
-    },
-    {
-        id: 4,
-        title: "Add API error handling",
-        description: "Handle validation errors and server responses.",
-        status: "completed",
-        priority: "low",
-        due_date: "2026-10-26",
-    },
-    {
-        id: 5,
-        title: "Write authentication tests",
-        description: "Test login, registration and protected routes.",
-        status: "pending",
-        priority: "medium",
-        due_date: "2026-11-03",
-    },
-];
+import {
+    fetchTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+} from "../../redux/thunks/tasksThunk";
+
+import {
+    clearTasksError,
+} from "../../redux/slices/tasksSlice";
+
 
 const emptyForm = {
     title: "",
@@ -114,7 +85,7 @@ const priorityStyles = {
 };
 
 const MyTasks = () => {
-    const [tasks, setTasks] = useState(initialTasks);
+
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [priorityFilter, setPriorityFilter] = useState("");
@@ -125,6 +96,18 @@ const MyTasks = () => {
     const [formData, setFormData] = useState(emptyForm);
     const [formError, setFormError] = useState("");
 
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const {
+        tasks = [],
+        pagination,
+        loading,
+        mutationLoading,
+        error,
+    } = useSelector((state) => state.tasks);
+
+
     const limit = 4;
 
     const filteredTasks = useMemo(() => {
@@ -133,7 +116,7 @@ const MyTasks = () => {
         return tasks.filter((task) => {
             const matchesSearch =
                 !query ||
-                task.title.toLowerCase().includes(query) ||
+                task.title?.toLowerCase().includes(query) ||
                 (task.description || "").toLowerCase().includes(query);
 
             const matchesStatus =
@@ -146,36 +129,40 @@ const MyTasks = () => {
         });
     }, [tasks, search, statusFilter, priorityFilter]);
 
-    const totalPages = Math.ceil(filteredTasks.length / limit);
-    const currentPage = Math.min(page, Math.max(totalPages, 1));
+    const totalPages = pagination?.totalPages || 0;
+    const currentPage = pagination?.page || page;
 
-    const paginatedTasks = filteredTasks.slice(
-        (currentPage - 1) * limit,
-        currentPage * limit
-    );
+    const paginatedTasks = filteredTasks;
+
 
     const stats = [
         {
             label: "Total Tasks",
-            value: tasks.length,
+            value: pagination?.total || 0,
             icon: ListTodo,
             color: "bg-indigo-50 text-indigo-600",
         },
         {
             label: "In Progress",
-            value: tasks.filter((task) => task.status === "in_progress").length,
+            value: tasks.filter(
+                (task) => task.status === "in_progress"
+            ).length,
             icon: Clock3,
             color: "bg-blue-50 text-blue-600",
         },
         {
             label: "Completed",
-            value: tasks.filter((task) => task.status === "completed").length,
+            value: tasks.filter(
+                (task) => task.status === "completed"
+            ).length,
             icon: CheckCircle2,
             color: "bg-emerald-50 text-emerald-600",
         },
         {
             label: "Pending",
-            value: tasks.filter((task) => task.status === "pending").length,
+            value: tasks.filter(
+                (task) => task.status === "pending"
+            ).length,
             icon: Circle,
             color: "bg-amber-50 text-amber-600",
         },
@@ -219,7 +206,7 @@ const MyTasks = () => {
         setFormError("");
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (!formData.title.trim()) {
@@ -227,37 +214,59 @@ const MyTasks = () => {
             return;
         }
 
-        if (editingTask) {
-            setTasks((prev) =>
-                prev.map((task) =>
-                    task.id === editingTask.id
-                        ? { ...task, ...formData, title: formData.title.trim() }
-                        : task
-                )
+        const payload = {
+            ...formData,
+            title: formData.title.trim(),
+        };
+
+        try {
+            if (editingTask) {
+                await dispatch(
+                    updateTask({
+                        taskId: editingTask.id,
+                        task: payload,
+                    })
+                ).unwrap();
+            } else {
+                await dispatch(createTask(payload)).unwrap();
+
+                setPage(1);
+            }
+
+            closeForm();
+
+            // Latest data reload
+            dispatch(fetchTasks({
+                page: editingTask ? page : 1,
+                limit,
+            }));
+
+        } catch (error) {
+            setFormError(
+                typeof error === "string"
+                    ? error
+                    : "Something went wrong."
             );
-        } else {
-            setTasks((prev) => [
-                {
-                    ...formData,
-                    title: formData.title.trim(),
-                    id: Date.now(),
-                },
-                ...prev,
-            ]);
-            setPage(1);
         }
-
-        closeForm();
     };
 
-    const handleDelete = () => {
-        setTasks((prev) =>
-            prev.filter((task) => task.id !== deleteTaskId)
-        );
-        setDeleteTaskId(null);
+    const handleDelete = async () => {
+        try {
+            await dispatch(deleteTask(deleteTaskId)).unwrap();
+
+            setDeleteTaskId(null);
+
+            dispatch(fetchTasks({
+                page,
+                limit,
+            }));
+
+        } catch (error) {
+            console.error("Delete failed:", error);
+        }
     };
 
-    const handleStatusChange = (task) => {
+    const handleStatusChange = async (task) => {
         const nextStatus =
             task.status === "pending"
                 ? "in_progress"
@@ -265,13 +274,19 @@ const MyTasks = () => {
                     ? "completed"
                     : "pending";
 
-        setTasks((prev) =>
-            prev.map((item) =>
-                item.id === task.id
-                    ? { ...item, status: nextStatus }
-                    : item
-            )
-        );
+        try {
+            await dispatch(
+                updateTask({
+                    taskId: task.id,
+                    task: {
+                        status: nextStatus,
+                    },
+                })
+            ).unwrap();
+
+        } catch (error) {
+            console.error("Status update failed:", error);
+        }
     };
 
     const resetFilters = () => {
@@ -411,6 +426,24 @@ const MyTasks = () => {
                             </button>
                         )}
                     </div>
+                    {loading && (
+                        <div className="py-10 text-center text-slate-500">
+                            Loading tasks...
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="m-5 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                            {error}
+
+                            <button
+                                onClick={() => dispatch(clearTasksError())}
+                                className="ml-3 font-semibold"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    )}
 
                     {/* Task list */}
                     <div className="space-y-3 px-4 pb-4 sm:px-5">
@@ -615,8 +648,12 @@ const MyTasks = () => {
                                 >
                                     Cancel
                                 </Button>
-                                <Button type="submit">
-                                    {editingTask ? "Save Changes" : "Create Task"}
+                                <Button type="submit" disabled={mutationLoading}>
+                                    {mutationLoading
+                                        ? "Saving..."
+                                        : editingTask
+                                            ? "Save Changes"
+                                            : "Create Task"}
                                 </Button>
                             </div>
                         </form>
