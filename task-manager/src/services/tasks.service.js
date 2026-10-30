@@ -11,6 +11,8 @@ export const getTasksService = async (params = {}) => {
     params: cleanParams,
   });
 
+  console.log(response);
+
   return response.data;
 };
 

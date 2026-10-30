@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useMemo, useState,useEffect } from "react";
 import {
     Search,
     Plus,
@@ -21,7 +21,7 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
 import Pagination from "../../components/common/Pagination";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -134,6 +134,25 @@ const MyTasks = () => {
 
     const paginatedTasks = filteredTasks;
 
+    useEffect(() => {
+        const loadTasks = async () => {
+            try {
+                const response = await dispatch(
+                    fetchTasks({
+                        page,
+                        limit,
+                    })
+                ).unwrap();
+
+                console.log("Tasks API Response:", response);
+
+            } catch (error) {
+                console.error("Tasks API Error:", error);
+            }
+        };
+
+        loadTasks();
+    }, [dispatch, page, limit]);
 
     const stats = [
         {
