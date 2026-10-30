@@ -1,22 +1,32 @@
 import { getTasksService } from "../../services/tasks.service.js";
 
-export const getTasksController = async (req, res, next) => {
+export const getTasksController = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const query = res.locals.validateQuery;
+    const userId = req.user.userId;
+
+   
 
     const result = await getTasksService({
       userId,
-      ...query,
+      page: Number(req.query.page) || 1,
+      limit: Number(req.query.limit) || 10,
+      status: req.query.status,
+      priority: req.query.priority,
+      search: req.query.search,
     });
+
+    
 
     return res.status(200).json({
       success: true,
-      message: "tasks fetched successfully",
-      data: result.tasks,
-      pagination: result.pagination,
+      ...result,
     });
   } catch (error) {
-    next(error);
+    
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

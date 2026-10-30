@@ -16,7 +16,6 @@ router.post("/create", authMiddleware, createTaskController);
 router.get(
   "/",
   authMiddleware,
-  validateQuery(taskListQuerySchema),
   getTasksController,
 );
 router.get("/:taskId", authMiddleware, getSingleTaskController);

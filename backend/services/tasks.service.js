@@ -45,42 +45,40 @@ export const getTasksService = async ({
   priority,
   search,
 }) => {
-  // 1. Default condition: current user's tasks only
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const currentPage = Math.max(1, Number(page) || 1);
+  const pageLimit = Math.max(1, Number(limit) || 10);
+
   const conditions = ["user_id = $1"];
   const values = [userId];
 
-  // 2. Status filter
   if (status) {
     values.push(status);
     conditions.push(`status = $${values.length}`);
   }
 
-  // 3. Priority filter
   if (priority) {
     values.push(priority);
     conditions.push(`priority = $${values.length}`);
   }
 
-  // 4. Search by task title
-  if (search) {
-    values.push(`%${search}%`);
+  if (search?.trim()) {
+    values.push(`%${search.trim()}%`);
     conditions.push(`title ILIKE $${values.length}`);
   }
 
-  // 5. Build WHERE clause
   const whereClause = conditions.join(" AND ");
+  const offset = (currentPage - 1) * pageLimit;
 
-  // 6. Calculate pagination offset
-  const offset = (page - 1) * limit;
-
-  // 7. Count all matching tasks
   const countQuery = `
     SELECT COUNT(*) AS total
     FROM tasks
     WHERE ${whereClause}
   `;
 
-  // 8. Fetch tasks for the requested page
   const tasksQuery = `
     SELECT
       id,
@@ -98,24 +96,20 @@ export const getTasksService = async ({
     OFFSET $${values.length + 2}
   `;
 
-  // 9. Execute both queries
   const [countResult, tasksResult] = await Promise.all([
     pool.query(countQuery, values),
-    pool.query(tasksQuery, [...values, limit, offset]),
+    pool.query(tasksQuery, [...values, pageLimit, offset]),
   ]);
 
-  // 10. Convert PostgreSQL COUNT result to a number
   const total = Number(countResult.rows[0].total);
-  const totalPages = Math.ceil(total / limit);
 
-  // 11. Return tasks and pagination metadata
   return {
     tasks: tasksResult.rows,
     pagination: {
-      page,
-      limit,
+      page: currentPage,
+      limit: pageLimit,
       total,
-      totalPages,
+      totalPages: Math.ceil(total / pageLimit),
     },
   };
 };
