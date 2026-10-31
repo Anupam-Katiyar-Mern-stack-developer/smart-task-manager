@@ -9,6 +9,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import MyTasks from "./pages/tasks/MyTasks";
 import Profile from "./pages/tasks/Profile";
+import AIGenerator from "./pages/AIGenerator";
 
 
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
                 path="/profile"
                 element={<Profile />}
               />
+              <Route path="/ai-generator" element={<AIGenerator />} />
             </Route>
           </Route>
 
