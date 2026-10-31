@@ -2,13 +2,9 @@ import { updateTaskService } from "../../services/tasks.service.js";
 
 export const updateTaskController = async (req, res) => {
   try {
-    console.log("PATCH API HIT");
-    console.log("Task ID:", req.params.taskId);
-    console.log("Request Body:", req.body);
-    console.log("User:", req.user);
 
     const userId = req.user.userId;
-    const taskId = Number(req.params.id);
+    const taskId = Number(req.params.taskId);
 
     const result = await updateTaskService({
       taskId,
