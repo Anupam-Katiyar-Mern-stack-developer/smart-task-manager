@@ -146,8 +146,6 @@ export const updateTaskService = async ({
   description,
   status,
 }) => {
-  
-
   const result = await pool.query(
     `UPDATE tasks
      SET
@@ -198,41 +196,45 @@ export const deleteTaskService = async ({ userId, taskId }) => {
 };
 
 // dashboard
+
 export const dashboardService = async ({ userId }) => {
-  const result = await pool.query(
+  // 1. Dashboard Stats
+  const statsResult = await pool.query(
     `
     SELECT
-  COUNT(*) AS total,
-  COUNT(*) FILTER (WHERE status = 'completed') AS completed,
-  COUNT(*) FILTER (WHERE status = 'pending') AS pending,
-  COUNT(*) FILTER (WHERE status = 'in_progress') AS in_progress,
-  COUNT(*) FILTER (WHERE priority = 'high') AS high_priority,
-  COUNT(*) FILTER (
-  WHERE due_date < CURRENT_DATE
-  AND status != 'completed'
-) AS overdue,
+      COUNT(*) AS total,
+      COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+      COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+      COUNT(*) FILTER (WHERE status = 'in_progress') AS in_progress,
+      COUNT(*) FILTER (WHERE priority = 'high') AS high_priority,
 
-COUNT(*) FILTER (
-  WHERE due_date = CURRENT_DATE
-  AND status != 'completed'
-) AS due_today,
+      COUNT(*) FILTER (
+        WHERE due_date < CURRENT_DATE
+        AND status != 'completed'
+      ) AS overdue,
 
-COUNT(*) FILTER (
-  WHERE due_date > CURRENT_DATE
-  AND status != 'completed'
-) AS upcoming
-FROM tasks
-WHERE user_id = $1; `,
+      COUNT(*) FILTER (
+        WHERE due_date = CURRENT_DATE
+        AND status != 'completed'
+      ) AS due_today,
+
+      COUNT(*) FILTER (
+        WHERE due_date > CURRENT_DATE
+        AND status != 'completed'
+      ) AS upcoming
+
+    FROM tasks
+    WHERE user_id = $1;
+    `,
     [userId],
   );
-  const stats = result.rows[0];
+
+  const stats = statsResult.rows[0];
 
   const total = Number(stats.total);
   const completed = Number(stats.completed);
-  const completionRate =
-    total === 0 ? 0 : Math.round((completed / total) * 100);
 
-  return {
+  const dashboardStats = {
     total,
     completed,
     pending: Number(stats.pending),
@@ -241,6 +243,38 @@ WHERE user_id = $1; `,
     overdue: Number(stats.overdue),
     dueToday: Number(stats.due_today),
     upcoming: Number(stats.upcoming),
-    completionRate,
+    completionRate: total === 0 ? 0 : Math.round((completed / total) * 100),
+  };
+
+  // 2. Recent Tasks (latest 5 created tasks)
+  const recentResult = await pool.query(
+    `
+    SELECT *
+    FROM tasks
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT 5;
+    `,
+    [userId],
+  );
+
+  // 3. Upcoming Tasks (next 5 incomplete tasks)
+  const upcomingResult = await pool.query(
+    `
+    SELECT *
+    FROM tasks
+    WHERE user_id = $1
+      AND due_date >= CURRENT_DATE
+      AND status != 'completed'
+    ORDER BY due_date ASC
+    LIMIT 5;
+    `,
+    [userId],
+  );
+
+  return {
+    stats: dashboardStats,
+    recentTasks: recentResult.rows,
+    upcomingTasks: upcomingResult.rows,
   };
 };
