@@ -13,7 +13,7 @@ export const dashboardController=async(req ,res ,next )=>{
         }
 
         const  result =await dashboardService({userId});
-
+        console.log(result)
         return res.status(200).json({
             success:true,
             message:"Dashborad succesfully fetch",

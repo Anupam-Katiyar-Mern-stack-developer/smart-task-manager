@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    AlertTriangle,
-    CheckCircle2,
-    Clock3,
-    Layers3,
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  Layers3,
+  CalendarDays,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Badge from "../../components/common/Badge";
@@ -75,34 +76,61 @@ const Dashboard = () => {
     const statCards = [
         {
             title: "Total Tasks",
-            value: total,
+            value: Number(stats?.total) || 0,
             description: "All your tasks",
             icon: Layers3,
             tone: "indigo",
         },
         {
             title: "Completed",
-            value: completed,
+            value: Number(stats?.completed) || 0,
             description: "Successfully finished",
             icon: CheckCircle2,
             tone: "green",
         },
         {
             title: "Pending",
-            value: stats?.pending,
+            value: Number(stats?.pending) || 0,
             description: "Awaiting your attention",
             icon: Clock3,
             tone: "amber",
         },
         {
             title: "Overdue",
-            value: stats?.overdue,
+            value: Number(stats?.overdue) || 0,
             description: "Past due and incomplete",
             icon: AlertTriangle,
             tone: "red",
         },
+        {
+            title: "In Progress",
+            value: Number(stats?.inProgress) || 0,
+            description: "Currently working on",
+            icon: Clock3,
+            tone: "indigo",
+        },
+        {
+            title: "High Priority",
+            value: Number(stats?.highPriority) || 0,
+            description: "Needs more attention",
+            icon: AlertTriangle,
+            tone: "red",
+        },
+        {
+            title: "Due Today",
+            value: Number(stats?.dueToday) || 0,
+            description: "Tasks due today",
+            icon: CalendarDays,
+            tone: "amber",
+        },
+        {
+            title: "Upcoming",
+            value: Number(stats?.upcoming) || 0,
+            description: "Future tasks",
+            icon: CalendarDays,
+            tone: "green",
+        },
     ];
-
     return (
         <div className="mx-auto max-w-[1600px] space-y-7">
             {/* Page heading */}

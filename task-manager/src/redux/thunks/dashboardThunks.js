@@ -10,7 +10,7 @@ export const fetchDashboardOverview = createAsyncThunk(
       if (response?.success === false) {
         return rejectWithValue(response.message || "Failed to load dashboard");
       }
-
+       console.log(response.data)
       // Expected API shape: { success: true, data: { stats, recentTasks, upcomingTasks } }
       return response.data ?? response;
     } catch (error) {
