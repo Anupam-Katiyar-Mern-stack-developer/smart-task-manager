@@ -22,11 +22,16 @@ export const createTaskService = async (taskData) => {
 };
 
 export const updateTaskService = async (taskId, task) => {
-    const response = await api.patch(`/tasks/${taskId}`, task);
-    return response.data;
+  const response = await api.patch(`/tasks/${taskId}`, task);
+  return response.data;
 };
 
 export const deleteTaskService = async (taskId) => {
   const response = await api.delete(`/tasks/${taskId}`);
+  return response.data;
+};
+
+export const getProfile = async () => {
+  const response = await api.get("/auth/user/me");
   return response.data;
 };
